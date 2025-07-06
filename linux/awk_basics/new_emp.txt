@@ -1,0 +1,4 @@
+name|sal|dept
+avi|100|accounts
+ami|200|hr
+pooja|300|finance

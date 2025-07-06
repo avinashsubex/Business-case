@@ -1,0 +1,184 @@
+#!/bin/bash
+
+#Following examples will give a clear idea on how to use awk commands in a day to day life
+Sample data -: 
+-----------
+emp.txt
+
+name age salary loc
+bob 22 1090 mysore
+tylor 34 2089 bangalore
+rohit 46 3421 chennai
+rahul 29 1234 bangalore
+aakash 34 9080 bangalore
+mahadeb 36 8900 bangalore
+pradeep 37 8900 chennai
+
+1. awk '{print}' emp.txt : print all the contents of the file
+
+Alternatively, 
+awk '{print $0}' emp.txt 
+
+2. For printing any particular columns in a file
+awk '{print $1, $2}' emp.txt #prints 1 & 2 column in a file
+
+for printing last column of a file, "NF" also represents the number of fields in the current record
+awk '{print $NF}'emp.txt #prints last column, very useful, no need to open file and read number of columns
+
+3. For printing line numbers along with normal rows output, use 'NR'
+awk '{print NR, $0}' emp.txt
+
+#printing only first 3 rows,
+awk 'NR == 1, NR == 3 {print NR, $0}' emp.txt
+
+4. Comments in output, can be enclosed in double quotes, <"comments">
+Ex : awk 'NR == 1, NR == 3 {print "Line number-:" NR, $0}' emp.txt
+
+5. pattern searching
+-> returning rows which contain only "bangalore" location
+awk '/bangalore/ {print $0}' emp.txt #Note: That pattern searching scans full row
+
+Note -: we can also use "BEGIN & END" keyword, begin will give same output as above while END will give same output plus last line in the file
+
+Let's see another example -:
+I want only rows where "y" is coming
+awk '/y/ {print $0}' emp.txt 
+
+count of rows where pattern matches -:
+awk '/y/ {++count_of_y} END {print "Count :"count_of_y}' emp.txt
+
+6. to get the number of lines in a file
+awk 'END {print NR}' emp.txt
+
+7. All the awk commands can be placed in a file with extension ".awk" and can be run also, example below:
+awk -f commands.awk
+
+8. Variable assignment & printing, for ex:
+awk -v name=Abhay 'BEGIN{print "Name = "name}'
+
+9. Print rows based on length, $0 for full file, $1 for col1, $2 for col2 and so..on
+awk 'length($0) > 10 {print}' emp.txt #print all rows with length greater than 10
+awk 'length($1) > 10 {print}' emp.txt #print all rows where length of col1 is greater than 10
+
+->alternatively above command can be used as, skip the print statement:
+awk 'length($0) > 10' emp.txt 
+
+->Comparison operators like <, == can also be used
+ 
+10. Regex operator [used with '~' operator]
+Suppose I want rows which contain data in col1 having data "9"
+awk '$1 ~9' emp.txt
+
+11. If, If-else, If-else-If example -:
+awk 'BEGIN {
+	num=10;  
+	if (num % 2 == 0) 
+	printf "%d is even number.\n", num 
+     }'
+=======================
+awk 'BEGIN {
+	num=25; 
+	if (num % 2 == 0) 
+	print num " Number is even"; 
+	else print num " Number is odd";
+    }'
+=======================
+awk 'BEGIN {
+	num=10;
+        if(num==1) 
+	print "number = 1"; 
+	else if(num==5) 
+	print "number = 5"; 
+	else if(num==10) 
+	print "number = 10";
+     }'
+=======================
+
+12.For loop with multiple statements within the loop
+awk 'BEGIN { 
+	for(i=0;i<5;i++) {
+		 print "Loop :"i;
+		 print "Hello-"i
+	 }
+     }'
+
+
+13. While loop
+awk 'BEGIN {
+	i=10; 
+	while(i>=0){
+		print "value of i is -"i
+		--i;
+	}
+     }'
+
+14. Do-while loop
+awk 'BEGIN {
+	i=1;
+	do{
+		print "i="i;
+		++i;
+	}while(i<6)
+    }'
+
+
+15. Break, continue & exit commands inside the loop
+
+awk 'BEGIN {
+	sum = 0;
+	for(i=0;i<50;++i){
+		sum += i;
+		if(sum >= 50){
+			break;
+		}
+		else{
+			print "Sum :"sum;
+  		}		
+	}	
+    }'
+
+
+
+awk 'BEGIN {
+	for(i=0;i<50;++i){
+		if(i % 2 == 0){       
+			print "Number is even :"i
+		}
+		else{
+			continue;
+		}
+	}
+    }'
+
+
+awk 'BEGIN {
+        sum = 0;
+        for(i=0;i<50;++i){
+                sum += i;
+                if(sum >= 50){
+                        exit(10);
+                }
+                else{
+                        print "Sum :"sum;
+                }
+        }
+    }'
+echo $? -> return after the execution of above script to check the return status, output - 10
+
+16. Redirect output to a file 
+awk 'BEGIN { print "Hello" > "/Users/abhayacaranaacyutadas/Desktop/linux/awk_basics/employee1.txt" }'
+
+For appending we can use ">>"
+
+Note: That all the commands after redirect should be enclosed within double quotes
+
+17. Example of using pipe operator in awk
+Ex : Shows how to convert text from lowercase to uppercase
+awk 'BEGIN { print "convert case" | "tr [a-z] [A-Z]" } '
+
+Note: That all the commands after pipe should be enclosed within double quotes
+
+
+
+
+

@@ -1,0 +1,5 @@
+name,age,sal
+pradeep,34,2000
+aakash,38,3098
+abdul,24,1234
+vinay,30,2345

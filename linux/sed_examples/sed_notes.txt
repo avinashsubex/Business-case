@@ -1,0 +1,64 @@
+#
+
+sed, "stream editor" is a very powerful command
+
+Let's take this raw file as an example-:
+
+hosts.txt
+=========
+/root/system;/root/hosts
+/paji/masala;/system;/shutdown
+/abhay/jps/sp/krs/bandi;/5050/startup
+/pooja/neutralise/bkp/bkp1/bkp;/start/stop/why/stop;/1010/go/start
+/root/system;/hosts;/root/system
+
+
+
+1. To print the lines in a file
+sed -n '1p' hosts.txt #Note : that "-n" is mandatory to print the lines here, in this example "1p" prints the first line to the console
+
+-> To print range of lines 
+sed -n '1,3p;$p' hosts.txt #Note : This prints from line 1 to 3 and last line in a file, you will not be able to make out line numbers in the output, for that you need to use this command
+
+cat -n hosts.txt | sed -n '1,3p;$p' 
+cat -n hosts.txt | sed -n '1,3p;6,15p;$p' #For different ranges and final line at the end
+
+2. To replace/substitute word using sed, we can use "s/old_text/new_text/", "s" keyword meaning substitute -:
+sed 's/root/bhoot/' hosts.txt #replaces the first occurance of root in the file with bhoot
+Alternatively, this also does the same job-:
+sed 's/root/bhoot/1' hosts.txt
+
+-> if you want to replace second occurance, then:
+sed 's/root/bhoot/2' hosts.txt #and so on
+
+-> if you want to replace globally then:
+sed 's/root/bhoot/g' hosts.txt
+
+-> if you want to replace 2nd occurance and all the occurances after that then -:
+sed 's/root/bhoot/2g' hosts.txt [not work in mac] 
+
+Note : "sed" only shows output in the command prompt and doesn't make changes to the original file, to do that we can use "-i";
+For ex : sed -i 's/root/bhoot/g' hosts.txt #[It will work fine in LINUX], [for mac -i option needs the backup file extension] -:
+For ex : sed -i ".bak" 's/root/bhoot/g' hosts.txt
+
+3. To replace text/ commenting using sed
+"^" carrot symbol represents starting of line
+
+-> to comment the lines using sed
+sed '1,2s/^/#/' ȟosts.txt  #replaces beginnning of 1 & 2 line with #, hence commenting it
+Reverting back from # to ''
+sed '1,2s/#//' ȟosts.txt  #un-commenting line 1 to 2
+
+4. delete lines using sed
+sed '1,3d' ȟosts.txt  #delete from line 1 to 3
+sed '1,3!d' ȟosts.txt #keeping only 1 to 3 lines and deleting other lines
+
+5. Adding/inserting text in beginning and end of line
+
+For beinning use "i" within single inverted commas
+For ex -: sed '5i <text_in_beginning_of_5th_line> ' hosts.txt
+
+For adding text to the end of line use "a" within single inverted commas
+For ex -: sed '4a <text_at_the_end_of_4th_line> ' hosts.txt
+
+

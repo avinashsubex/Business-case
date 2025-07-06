@@ -1,0 +1,15 @@
+                                             
+#	 _______     _______     _______     _______ 
+#	|\     /|   |\     /|   |\     /|   |\     /|
+#	| +---+ |   | +---+ |   | +---+ |   | +---+ |
+#	| |   | |   | |   | |   | |   | |   | |   | |
+#	| |G  | |   | |R  | |   | |E  | |   | |P  | |
+#	| +---+ |   | +---+ |   | +---+ |   | +---+ |
+#	|/_____\|   |/_____\|   |/_____\|   |/_____\|
+#       
+#Grep in-depth examples
+
+1. To find the "text" in files recursively 
+grep -irl "text" .  [-i= ignore case, r=recursive, l=list down paths, .=cwd]
+
+                                     
