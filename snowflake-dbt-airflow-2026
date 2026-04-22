@@ -131,4 +131,92 @@ SELECT * FROM CUSTOMERS;
 show tables;
 show views;
 
+# dbt code
+cat stg_orders.sql 
+SELECT
+    data:id::INT AS order_id,
+    data:amount::NUMBER AS amount,
+    data:updated_at::DATE AS updated_at,
+    load_ts
+FROM raw_orders
+
+-------
+cat orders.sql 
+-- orders.sql
+
+{{ config(
+    materialized='incremental',
+    unique_key='order_id',
+    incremental_strategy='merge'
+) }}
+
+WITH source_data AS (
+
+    SELECT
+        order_id,
+        amount,
+        updated_at,
+        load_ts
+    FROM {{ ref('stg_orders') }}
+
+    {% if is_incremental() %}
+    WHERE load_ts >= (
+        SELECT COALESCE(MAX(load_ts), '1900-01-01')
+        FROM {{ this }}
+    )
+    {% endif %}
+
+),
+
+deduped AS (
+
+    SELECT *
+    FROM source_data
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY order_id
+        ORDER BY updated_at DESC, load_ts DESC
+    ) = 1
+
+)
+
+SELECT * FROM deduped
+
+
+----snapshots----
+cat orders_snapshot.sql 
+{% snapshot orders_snapshot %}
+
+{{
+    config(
+      target_schema='snapshots',
+      unique_key='order_id',
+      strategy='timestamp',
+      updated_at='updated_at'
+    )
+}}
+
+SELECT
+    order_id,
+    amount,
+    updated_at
+FROM {{ ref('orders') }}
+
+{% endsnapshot %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
