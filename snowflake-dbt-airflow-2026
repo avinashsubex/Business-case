@@ -1,0 +1,134 @@
+CREATE OR REPLACE DATABASE demo_db;
+USE DATABASE demo_db;
+
+CREATE OR REPLACE SCHEMA raw;
+USE SCHEMA raw;
+
+CREATE OR REPLACE WAREHOUSE compute_wh
+WAREHOUSE_SIZE = 'XSMALL'
+AUTO_SUSPEND = 60
+AUTO_RESUME = TRUE;
+
+USE WAREHOUSE compute_wh;
+
+
+CREATE OR REPLACE STORAGE INTEGRATION s3_int
+TYPE = EXTERNAL_STAGE
+STORAGE_PROVIDER = S3
+ENABLED = TRUE
+STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::250260913375:role/snowflake_s3_role'
+STORAGE_ALLOWED_LOCATIONS = ('s3://my-dbt-snowflake-demo/data/'); 
+
+CREATE OR REPLACE STORAGE INTEGRATION s3_int
+TYPE = EXTERNAL_STAGE
+STORAGE_PROVIDER = S3
+ENABLED = TRUE
+STORAGE_AWS_ROLE_ARN = 'arn:aws:iam::250260913375:role/snowflake_s3_role'
+STORAGE_ALLOWED_LOCATIONS = (
+    's3://my-dbt-snowflake-demo/data/',
+    's3://my-dbt-snowflake-demo/customer-data/'
+);
+
+DESC INTEGRATION s3_int;
+STORAGE_AWS_IAM_USER_ARN - arn:aws:iam::714412036928:user/8whk1000-s
+STORAGE_AWS_EXTERNAL_ID - MK01727_SFCRole=4_LFHYkj/kHunsQhmscrW+NfbQA8U=
+
+
+
+CREATE OR REPLACE STAGE my_stage
+URL='s3://my-dbt-snowflake-demo/customer-data/'
+STORAGE_INTEGRATION = s3_int
+FILE_FORMAT = (TYPE = JSON);
+
+LIST @my_stage;
+
+CREATE OR REPLACE TABLE raw_orders (
+    data VARIANT,
+    load_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+);
+
+-- pipe creation
+
+DROP PIPE IF EXISTS my_pipe;
+
+CREATE OR REPLACE PIPE my_pipe
+AUTO_INGEST = TRUE
+AWS_SNS_TOPIC = 'arn:aws:sns:us-east-1:250260913375:snowflake-topic'
+AS
+COPY INTO raw_orders(data)
+FROM @my_stage
+FILE_FORMAT = (TYPE = JSON);
+
+LIST @my_stage;
+
+SHOW PIPES;
+
+
+
+SELECT * FROM raw_orders;
+SELECT count(*) FROM raw_orders;
+
+truncate table raw_orders;
+
+SELECT SYSTEM$PIPE_STATUS('my_pipe');
+
+
+
+SELECT *
+FROM TABLE(INFORMATION_SCHEMA.COPY_HISTORY(
+  TABLE_NAME=>'RAW_ORDERS',
+  START_TIME=>DATEADD('HOUR', -2, CURRENT_TIMESTAMP())
+));
+
+ALTER PIPE my_pipe REFRESH;
+
+show tables;
+
+SELECT * FROM orders;
+SELECT count(*) FROM orders;
+
+
+SELECT * FROM SNAPSHOTS.orders_snapshot; 
+SELECT count(*) FROM SNAPSHOTS.orders_snapshot; 
+
+DROP TABLE IF EXISTS SNAPSHOTS.orders_snapshot;
+
+
+SELECT * FROM MY_FIRST_DBT_MODEL;
+
+
+drop table if exists orders;
+drop table if exists MY_FIRST_DBT_MODEL;
+
+
+-- Fixing dbt & snowflake issue while running from Airflow
+select current_region();
+
+
+-----------------SCENARIO 1: Schema Evolution (VERY IMPORTANT)-----------------------------
+-- 
+-- Option 1: Use VARIANT (recommended in ingestion layer)
+CREATE or replace TABLE raw_customers (
+    data VARIANT,
+    load_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+);
+
+CREATE or replace FILE FORMAT my_json_format
+TYPE = 'JSON';
+
+COPY INTO raw_customers(data)
+FROM @my_stage
+FILE_FORMAT = (TYPE = 'JSON');
+
+list @my_stage;
+
+
+SELECT * FROM raw_customers;
+SELECT * FROM STG_CUSTOMERS;
+
+SELECT * FROM CUSTOMERS;
+
+show tables;
+show views;
+
+
